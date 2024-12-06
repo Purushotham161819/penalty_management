@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Name Management</title>
+</head>
+<body>
+    <h1>Penalty Management System</h1>
+    <form action="/add" method="POST">
+        <label for="firstName">First Name:</label>
+        <input type="text" id="firstName" name="firstName" required>
+        <label for="lastName">Last Name</label>
+        <input type="text" id="lastName" name="lastName" required>
+        <label for="violation">Violation</label>
+        <input type="text" id="violation" name="violation" required>
+        <label for="amount">Amount</label>
+        <input type="number" id="amount" name="amount" required> 
+        <label for="dueDdate">Due Date</label>
+        <input type="date" id="dueDate" name="dueDate" required><br><br>
+        <button type="submit">Add</button>
+    </form>
+
+    <h2>Fines List</h2>
+    <table border="1">
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Violation</th>
+            <th>Amount</th>
+            <th>Due Date</th>
+            <th>Actions</th>
+        </tr>
+        <% outPutData.forEach(function(name) { %>
+            <tr>
+                <td><%= name.firstName %></td>
+                <td><%= name.lastName %></td>
+                <td><%= name.violation %></td>
+                <td><%= name.amount %></td>
+                <td><%= new Date(name.dueDate).toLocaleDateString('en-US') %></td>
+                <td>
+                <button onclick="modifyRecord('<%= name._id %>')">Update</button>
+                <button onClick="deleteRecord('<%= name._id %>')">Delete</button>
+
+                </td>
+            </tr>
+        <% }); %>
+
+            
+    </table>
+    <form id="updateRecordForm" style="display:none" onSubmit="submitForm(event)">
+        <h3>Update Fine Details</h3>
+        <input type="hidden" id="recordIdField" name="recordId" />
+        
+        <label for="editFirstName">First Name:</label>
+        <input type="text" id="editFirstName" name="editFirstName" required>
+        
+        <label for="editLastName">Last Name:</label>
+        <input type="text" id="editLastName" name="editLastName" required>
+        
+        <label for="editViolation">Violation:</label>
+        <input type="text" id="editViolation" name="editViolation" required>
+        
+        <label for="editAmount">Amount:</label>
+        <input type="number" id="editAmount" name="editAmount" required>
+        
+        <label for="editDueDate">Due Date:</label>
+        <input type="date" id="editDueDate" name="editDueDate" required>
+        
+        <button type="submit">Save</button>
+        <button type="button" onClick="cancelEdit()">Cancel</button>
+    </form>
+    
+
+    <!--Script to define the function deleteRecord-->
+    <script>
+        function deleteRecord(recordID) 
+        {
+            if(confirm("Are sure to delete this record?"))
+            {
+                fetch(`/delete/${recordID}`,
+                {
+                method: 'DELETE',
+                headers: {'content-Type':'application/json'},
+                })
+                .then(response => response.json())
+                .then(data=> 
+                {
+                    if(data.success)
+                        {
+                         alert("Record Deleted Successfully");
+                            document.querySelector(`#row-${recordID}`).remove();
+                        }
+                    else
+                    {
+                        alert("Failed Remove Record");
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+    </script>
+
+    <script>
+        // Function to fetch and populate data for editing
+        function modifyRecord(id) {
+        fetch(`/getRecord/${id}`, {
+        method: 'GET'
+        })
+        .then(response => response.json())
+        .then(function(result) {
+            if (result.success) {
+                const existingData = result.data; // Access the `data` property
+                document.getElementById('updateRecordForm').style.display = 'block'; // Show the form
+                document.getElementById('editFirstName').value = existingData.firstName || ''; // Default to empty if undefined
+                document.getElementById('editLastName').value = existingData.lastName || '';
+                document.getElementById('editViolation').value = existingData.violation || '';
+                document.getElementById('editAmount').value = existingData.amount || '';
+                document.getElementById('editDueDate').value = existingData.dueDate || '';
+                document.getElementById('recordIdField').value = id; // Set the hidden field for ID
+            } else {
+                alert(result.message);
+            }
+        })
+        .catch(error => console.error('Error fetching record:', error));
+        }
+
+
+        function submitForm(event) {
+            event.preventDefault();
+            const updatedData = {
+                firstName: document.getElementById('editFirstName').value,
+                lastName: document.getElementById('editLastName').value,
+                violation: document.getElementById('editViolation').value,
+                amount: document.getElementById('editAmount').value,
+                dueDate: document.getElementById('editDueDate').value,
+            };
+            const recordId = document.getElementById('recordIdField').value;
+
+            fetch(`/updateRecord/${recordId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData),
+            })
+            .then(response => response.json())
+            .then(updatedRecord => {
+                if (updatedRecord.success) {
+                    alert("Record Updated Successfully");
+                    document.getElementById('updateRecordForm').style.display = 'none';
+                } else {
+                    alert("Failed to update Record");
+                }
+            })
+            .catch(error => console.error('Error updating record:', error));
+        }
+
+        function cancelEdit() {
+            document.getElementById('updateRecordForm').style.display = 'none';
+        }
+
+    </script>
+
+</body>
+</html>
