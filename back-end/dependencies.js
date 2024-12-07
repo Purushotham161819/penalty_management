@@ -5,11 +5,14 @@ const path = require('path'); // To manage paths
 const Fine = require('./models/fine'); // Import the Name model from models/name.js
 require('dotenv').config(); // Load environment variables from .env file
 
+const host = process.env.HOST; //Access HOST from .env
 const port = process.env.PORT; // Access PORT from .env
 
 const server = express(); // Initialize Express as 'server'
 
 const router = express.Router();  // Use the server's Router for route definitions
+
+
 
 
 // Connect to MongoDB
@@ -26,4 +29,4 @@ server.use(express.urlencoded({ extended: true })); // For form-encoded payloads
 
 
 // Export required instances and configurations
-module.exports = {server, Fine, mongoose, port, express, router};
+module.exports = {server, Fine, mongoose, port, express, router, host};
