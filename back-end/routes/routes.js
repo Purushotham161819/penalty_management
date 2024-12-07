@@ -4,7 +4,7 @@ const { server, Fine, router, mongoose } = require('../dependencies'); // Adjust
 
 
 // Route to add data to fine to server
-server.post('/add', async (req, res) => {
+server.post(process.env.ADD_FINE_ROUTE, async (req, res) => {
     const { firstName, lastName, violation, amount, dueDate } = req.body;
 
     // Check if all required fields are provided
@@ -25,7 +25,7 @@ server.post('/add', async (req, res) => {
 
 
 // Route: Delete Record
-server.delete('/delete/:id', async (req, res) => {
+server.delete(process.env.DELETE_FINE_ROUTE ||'', async (req, res) => {
     const recordID = req.params.id; // Extract record ID from the route parameter
     try {
         const result = await Fine.findByIdAndDelete(recordID); // Attempt to delete the record
@@ -41,7 +41,7 @@ server.delete('/delete/:id', async (req, res) => {
 });
 
 // Get Record By ID
-server.get('/getRecord/:id', async (req, res) => {
+server.get(process.env.GET_RECORD_ROUTE, async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -65,7 +65,7 @@ server.get('/getRecord/:id', async (req, res) => {
 
 
 // Update Record By ID
-server.put('/updateRecord/:id', async (req, res) => {
+server.put(process.env.UPDATE_RECORD_ROUTE, async (req, res) => {
     const { id } = req.params;
     const updatedData = req.body;
 

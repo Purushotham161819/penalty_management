@@ -1,0 +1,73 @@
+<h2>Penalty Management System</h2>
+<div class="container">
+    <form (ngSubmit)="onSubmit()" #fineForm="ngForm">
+      <div class="mb-3">
+        <label for="firstName" class="form-label">First Name</label>
+        <input
+          type="text"
+          id="firstName"
+          name="firstName"
+          class="form-control"
+          [(ngModel)]="firstName"
+          required
+          placeholder="Enter first name"
+        />
+      </div>
+  
+      <div class="mb-3">
+        <label for="lastName" class="form-label">Last Name</label>
+        <input
+          type="text"
+          id="lastName"
+          name="lastName"
+          class="form-control"
+          [(ngModel)]="lastName"
+          required
+          placeholder="Enter last name"
+        />
+      </div>
+  
+      <div class="mb-3">
+        <label for="violation" class="form-label">Violation</label>
+        <input
+          type="text"
+          id="violation"
+          name="violation"
+          class="form-control"
+          [(ngModel)]="violation"
+          required
+          placeholder="Enter violation"
+        />
+      </div>
+  
+      <div class="mb-3">
+        <label for="amount" class="form-label">Amount</label>
+        <input
+          type="number"
+          id="amount"
+          name="amount"
+          class="form-control"
+          [(ngModel)]="amount"
+          required
+          placeholder="Enter fine amount"
+        />
+      </div>
+  
+      <div class="mb-3">
+        <label for="dueDate" class="form-label">Due Date</label>
+        <input
+          type="date"
+          id="dueDate"
+          name="dueDate"
+          class="form-control"
+          [(ngModel)]="dueDate"
+          required
+        />
+      </div>
+  
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  
+    <div *ngIf="message" class="mt-3 alert alert-info">{{ message }}</div>
+  </div>
+  
