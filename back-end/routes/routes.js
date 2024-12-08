@@ -1,5 +1,5 @@
 // Import necessary dependencies from dependencies.js
-const { server, Fine, router, mongoose } = require('../dependencies'); // Adjust path as needed
+const { server, Fine, router, mongoose, VALIDATION_PATTERNS, VALIDATION_ERROR_MESSAGES } = require('../dependencies'); 
 
 
 
@@ -7,25 +7,37 @@ const { server, Fine, router, mongoose } = require('../dependencies'); // Adjust
 server.post(process.env.ADD_FINE_ROUTE, async (req, res) => {
     const { firstName, lastName, violation, amount, dueDate } = req.body;
 
-    // Check if all required fields are provided
-    if (firstName && lastName && violation && amount && dueDate) {
-        try {
-            const newFine = new Fine({ firstName, lastName, violation, amount, dueDate }); // Create a new document
-            await newFine.save(); // Save to the database
-            res.status(201).json({ message: process.env.FINE_ADD_SUCCESS }); // Success response
-        } catch (error) {
-            console.error('Error saving fine:', error); // Log the error
-            res.status(500).json({ message: process.env.FINE_ADD_ERROR }); // Failure response
-        }
-    } else {
-        // Handle missing fields
-        res.status(400).json({ message: process.env.ALL_FIELDS_REQUIRED });
+    // Validate input fields
+    if (!firstName || !VALIDATION_PATTERNS.name.test(firstName)) {
+        return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidFirstName });
+    }
+    if (!lastName || !VALIDATION_PATTERNS.name.test(lastName)) {
+        return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidLastName });
+    }
+    if (!violation || !VALIDATION_PATTERNS.name.test(violation)) {
+        return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidViolation });
+    }
+    if (!amount || !VALIDATION_PATTERNS.number.test(amount)) {
+        return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidAmount });
+    }
+    if (!dueDate || !VALIDATION_PATTERNS.date.test(dueDate)) {
+        return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidDueDate });
+    }
+
+    // Proceed with saving to the database
+    try {
+        const newFine = new Fine({ firstName, lastName, violation, amount, dueDate }); // Create a new document
+        await newFine.save(); // Save to the database
+        res.status(201).json({ message: process.env.FINE_ADD_SUCCESS }); // Success response
+    } catch (error) {
+        console.error('Error saving fine:', error); // Log the error
+        res.status(500).json({ message: process.env.FINE_ADD_ERROR }); // Failure response
     }
 });
 
 
 // Route: Delete Record
-server.delete(process.env.DELETE_FINE_ROUTE ||'', async (req, res) => {
+server.delete(process.env.DELETE_FINE_ROUTE, async (req, res) => {
     const recordID = req.params.id; // Extract record ID from the route parameter
     try {
         const result = await Fine.findByIdAndDelete(recordID); // Attempt to delete the record
