@@ -15,7 +15,7 @@ const swaggerOptions = {
             },
         ],
     },
-    apis: ['./routes/swaggerDocumentation.js'], // Path to your Swagger definitions
+    apis: ['./routes/swaggerDocumentation.js'], // Path to Swagger definitions
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
