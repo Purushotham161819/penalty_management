@@ -4,16 +4,13 @@ const { server, Fine, router, mongoose, VALIDATION_PATTERNS, VALIDATION_ERROR_ME
 const Violator = require('../models/violator'); 
 
 
-// Route to add data to fine to server
+// Route to add fine data to the server
 server.post(process.env.ADD_FINE_ROUTE, async (req, res) => {
-    const { firstName, lastName, violation, amount, dueDate } = req.body;
+    const { violatorID, violation, amount, dueDate } = req.body;
 
     // Validate input fields
-    if (!firstName || !VALIDATION_PATTERNS.name.test(firstName)) {
-        return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidFirstName });
-    }
-    if (!lastName || !VALIDATION_PATTERNS.name.test(lastName)) {
-        return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidLastName });
+    if (!violatorID || !VALIDATION_PATTERNS.id.test(violatorID)) {
+        return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidViolatorID });
     }
     if (!violation || !VALIDATION_PATTERNS.name.test(violation)) {
         return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidViolation });
@@ -25,19 +22,38 @@ server.post(process.env.ADD_FINE_ROUTE, async (req, res) => {
         return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidDueDate });
     }
 
-    // Proceed with saving to the database
     try {
-        const newFine = new Fine({ firstName, lastName, violation, amount, dueDate }); // Create a new document
-        await newFine.save(); // Save to the database
-        res.status(201).json({ message: process.env.FINE_ADD_SUCCESS }); // Success response
+        // Find the violator by their ID
+        const violator = await Violator.findOne({ violatorID });
+        if (!violator) {
+            return res.status(404).json({ message: VALIDATION_ERROR_MESSAGES.violatorNotFound });
+        }
+
+        // Create a new Fine document
+        const newFine = new Fine({
+            violator: violator._id, // Reference the violator's ObjectId
+            violation,
+            amount,
+            dueDate,
+            fineCreatedDate: new Date() // Explicitly set fineCreatedDate to current date
+        });
+
+        // Save the fine to the database
+        await newFine.save();
+
+        // Respond with success message
+        res.status(201).json({
+            message: process.env.FINE_ADD_SUCCESS,
+            fine: newFine
+        });
     } catch (error) {
-        console.error('Error saving fine:', error); // Log the error
-        res.status(500).json({ message: process.env.FINE_ADD_ERROR }); // Failure response
+        console.error('Error saving fine:', error);
+        res.status(500).json({ message: process.env.FINE_ADD_ERROR });
     }
 });
 
 
-// Route: Delete Record
+// Route: Delete Fine Record
 server.delete(process.env.DELETE_FINE_ROUTE, async (req, res) => {
     const recordID = req.params.id; // Extract record ID from the route parameter
     try {
@@ -53,7 +69,7 @@ server.delete(process.env.DELETE_FINE_ROUTE, async (req, res) => {
     }
 });
 
-// Get Record By ID
+// Get Fine Record By ID
 server.get(process.env.GET_RECORD_ROUTE, async (req, res) => {
     const { id } = req.params;
 
@@ -77,7 +93,7 @@ server.get(process.env.GET_RECORD_ROUTE, async (req, res) => {
 });
 
 
-// Update Record By ID
+// Update Fine Record By ID
 server.put(process.env.UPDATE_RECORD_ROUTE, async (req, res) => {
     const { id } = req.params;
     const updatedData = req.body;
@@ -114,13 +130,16 @@ server.put(process.env.UPDATE_RECORD_ROUTE, async (req, res) => {
 
 // API to add violator details
 server.post(process.env.ADD_VIOLATOR_ROUTE, async (req, res) => {
-    const { violatorID, name, DoB, email, contactNumber, address } = req.body;
+    const { violatorID, firstName, lastName, DoB, email, contactNumber, address } = req.body;
 
     // Validate input fields
     if (!violatorID || !VALIDATION_PATTERNS.id.test(violatorID)) {
         return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidViolatorID });
     }
-    if (!name || !VALIDATION_PATTERNS.name.test(name)) {
+    if (!firstName || !VALIDATION_PATTERNS.name.test(firstName)) {
+        return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidName });
+    }
+    if (!lastName || !VALIDATION_PATTERNS.name.test(lastName)) {
         return res.status(400).json({ message: VALIDATION_ERROR_MESSAGES.invalidName });
     }
     if (!DoB || !VALIDATION_PATTERNS.date.test(DoB)) {
@@ -138,7 +157,7 @@ server.post(process.env.ADD_VIOLATOR_ROUTE, async (req, res) => {
 
     // Proceed with saving to the database
     try {
-        const newViolator = new Violator({ violatorID, name, DoB, email, contactNumber, address });  // Create a new Violator instance
+        const newViolator = new Violator({ violatorID, firstName, lastName, DoB, email, contactNumber, address });  // Create a new Violator instance
         const savedViolator = await newViolator.save();  // Save to the database
 
         // Respond with the saved violator details

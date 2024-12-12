@@ -42,12 +42,14 @@ const VALIDATION_PATTERNS = {
 
 // Error messages
 const VALIDATION_ERROR_MESSAGES = {
+    invalidViolatorID: "The provided violator ID is invalid. Please provide a valid ID.",
     invalidFirstName: 'Invalid first name. Only alphabets and single spaces are allowed.',
     invalidLastName: 'Invalid last name. Only alphabets and single spaces are allowed.',
     invalidViolation: 'Invalid violation. Only alphabets and single spaces are allowed.',
     invalidAmount: 'Invalid amount. Only numbers are allowed.',
     invalidDueDate: 'Invalid due date. The date must be in YYYY-MM-DD format.',
     invalidViolatorID: 'Invalid Violator ID.',
+    violatorNotFound: "The violator ID does not exist in the database. Please ensure you have added the violator before assigning a fine.",
     invalidName: 'Name should only contain letters and spaces.',
     invalidDoB: 'Invalid Date of Birth. Format should be YYYY-MM-DD.',
     invalidEmail: 'Invalid email format.',

@@ -2,44 +2,41 @@
 
 /**
  * @swagger
- * /add:
+ * /addFine:
  *   post:
- *     summary: Add a fine
- *     description: Add details about a fine, including the violator's name, violation type, fine amount, and due date.
  *     tags:
  *       - Fine Management
+ *     summary: Add a fine to a violator
+ *     description: This endpoint allows an admin to add a fine to a violator, including validation checks on the input fields. The fine is associated with the violator based on their unique violatorID, and it includes details such as the violation, amount, and due date.
+ *     operationId: addFine
  *     requestBody:
- *       description: Fine details to be added
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               firstName:
+ *               violatorID:
  *                 type: string
- *                 description: First name of the violator
- *                 example: John
- *               lastName:
- *                 type: string
- *                 description: Last name of the violator
- *                 example: Doe
+ *                 description: The unique ID of the violator.
+ *                 example: "V12345"
  *               violation:
  *                 type: string
- *                 description: Type of violation committed
- *                 example: Speeding
+ *                 description: The type of violation committed by the violator.
+ *                 example: "Speeding"
  *               amount:
  *                 type: number
- *                 description: Amount of fine
- *                 example: 150
+ *                 format: float
+ *                 description: The amount of the fine.
+ *                 example: 150.00
  *               dueDate:
  *                 type: string
  *                 format: date
- *                 description: Due date for the fine payment
- *                 example: 2024-12-31
+ *                 description: The due date for the fine payment.
+ *                 example: "2024-12-31"
  *     responses:
  *       201:
- *         description: Fine added successfully
+ *         description: Fine successfully added
  *         content:
  *           application/json:
  *             schema:
@@ -47,9 +44,35 @@
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Fine added successfully!
+ *                   example: "Fine added successfully"
+ *                 fine:
+ *                   type: object
+ *                   properties:
+ *                     violator:
+ *                       type: string
+ *                       description: The ID of the violator.
+ *                       example: "V12345"
+ *                     violation:
+ *                       type: string
+ *                       description: The type of violation committed.
+ *                       example: "Speeding"
+ *                     amount:
+ *                       type: number
+ *                       format: float
+ *                       description: The amount of the fine.
+ *                       example: 150.00
+ *                     dueDate:
+ *                       type: string
+ *                       format: date
+ *                       description: The due date for the fine payment.
+ *                       example: "2024-12-31"
+ *                     fineCreatedDate:
+ *                       type: string
+ *                       format: date-time
+ *                       description: The date the fine was created.
+ *                       example: "2024-12-01T12:00:00Z"
  *       400:
- *         description: Validation error in the request data
+ *         description: Invalid input parameters
  *         content:
  *           application/json:
  *             schema:
@@ -57,7 +80,17 @@
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Invalid first name. Only alphabets and single spaces are allowed.
+ *                   example: "Invalid violator ID"
+ *       404:
+ *         description: Violator not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Violator not found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -67,15 +100,18 @@
  *               properties:
  *                 message:
  *                   type: string
- *                   example: An error occurred while adding the fine.
+ *                   example: "Error adding fine"
  */
+
+
+
 
 
 // Swagger Documentation: Delete Fine Record Endpoint
 
 /**
  * @swagger
- * /delete/{id}:
+ * /deleteFine/{id}:
  *   delete:
  *     summary: Delete a fine record
  *     description: Deletes a fine record based on the provided record ID.
@@ -143,7 +179,7 @@
 
 /**
  * @swagger
- * /getRecord/{id}:
+ * /getFine/{id}:
  *   get:
  *     summary: Get a fine record by ID
  *     description: Fetches a fine record from the database based on the provided record ID.
@@ -232,7 +268,7 @@
 
 /**
  * @swagger
- * /updateRecord/{id}:
+ * /updateFine/{id}:
  *   put:
  *     summary: Update a fine record by ID
  *     description: Updates an existing fine record based on the provided record ID and updated data.
@@ -445,10 +481,11 @@
  * @swagger
  * /addViolator:
  *   post:
- *     summary: Add a new violator to the database
- *     description: This endpoint allows the creation of a new violator by submitting their details. All fields are validated to ensure data integrity before saving to the database.
  *     tags:
  *       - Violators
+ *     summary: Add violator details
+ *     description: This endpoint allows you to add a new violator's details, including their personal information and complete address. All required fields must be provided for successful creation.
+ *     operationId: addViolator
  *     requestBody:
  *       required: true
  *       content:
@@ -458,60 +495,57 @@
  *             properties:
  *               violatorID:
  *                 type: string
- *                 description: A unique alphanumeric identifier for the violator.
+ *                 description: Unique ID for the violator. Must be unique and required.
  *                 example: "V12345"
- *               name:
+ *               firstName:
  *                 type: string
- *                 description: Full name of the violator.
- *                 example: "John Doe"
+ *                 description: First name of the violator.
+ *                 example: "John"
+ *               lastName:
+ *                 type: string
+ *                 description: Last name of the violator.
+ *                 example: "Doe"
  *               DoB:
  *                 type: string
  *                 format: date
- *                 description: The violator's date of birth in YYYY-MM-DD format.
- *                 example: "1990-05-14"
+ *                 description: Date of birth of the violator in YYYY-MM-DD format.
+ *                 example: "1990-05-15"
  *               email:
  *                 type: string
  *                 format: email
- *                 description: The violator's email address.
+ *                 description: Email address of the violator.
  *                 example: "john.doe@example.com"
  *               contactNumber:
  *                 type: string
- *                 description: The violator's contact number (10 digits).
- *                 example: "9876543210"
+ *                 description: Contact number of the violator.
+ *                 example: "+1234567890"
  *               address:
  *                 type: object
- *                 description: The violator's address details.
+ *                 description: Complete address of the violator.
  *                 properties:
  *                   street:
  *                     type: string
- *                     description: Street address.
+ *                     description: Street address of the violator.
  *                     example: "123 Main Street"
  *                   apartment:
  *                     type: string
- *                     description: Apartment or suite number.
+ *                     description: Apartment number, if applicable.
  *                     example: "Apt 4B"
  *                   city:
  *                     type: string
- *                     description: City name.
+ *                     description: City or town of the violator's address.
  *                     example: "Springfield"
  *                   state:
  *                     type: string
- *                     description: State name.
- *                     example: "Illinois"
+ *                     description: State of the violator's address.
+ *                     example: "IL"
  *                   zipCode:
  *                     type: string
- *                     description: ZIP code.
+ *                     description: ZIP code of the violator's address.
  *                     example: "62704"
- *             required:
- *               - violatorID
- *               - name
- *               - DoB
- *               - email
- *               - contactNumber
- *               - address
  *     responses:
  *       201:
- *         description: Violator details successfully added.
+ *         description: Violator successfully added
  *         content:
  *           application/json:
  *             schema:
@@ -525,26 +559,24 @@
  *                   properties:
  *                     violatorID:
  *                       type: string
- *                       description: The unique ID of the violator.
  *                       example: "V12345"
- *                     name:
+ *                     firstName:
  *                       type: string
- *                       description: Full name of the violator.
- *                       example: "John Doe"
+ *                       example: "John"
+ *                     lastName:
+ *                       type: string
+ *                       example: "Doe"
  *                     DoB:
  *                       type: string
  *                       format: date
- *                       description: The date of birth of the violator.
- *                       example: "1990-05-14"
+ *                       example: "1990-05-15"
  *                     email:
  *                       type: string
  *                       format: email
- *                       description: The violator's email address.
  *                       example: "john.doe@example.com"
  *                     contactNumber:
  *                       type: string
- *                       description: The violator's contact number.
- *                       example: "9876543210"
+ *                       example: "+1234567890"
  *                     address:
  *                       type: object
  *                       properties:
@@ -559,12 +591,12 @@
  *                           example: "Springfield"
  *                         state:
  *                           type: string
- *                           example: "Illinois"
+ *                           example: "IL"
  *                         zipCode:
  *                           type: string
  *                           example: "62704"
  *       400:
- *         description: Validation error due to invalid input data.
+ *         description: Invalid input parameters
  *         content:
  *           application/json:
  *             schema:
@@ -572,9 +604,9 @@
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Invalid violator ID."
+ *                   example: "Invalid violator ID"
  *       500:
- *         description: Server error occurred while saving violator details.
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -585,7 +617,8 @@
  *                   example: "Error adding violator"
  *                 error:
  *                   type: string
- *                   example: "Database connection failure"
+ *                   description: Detailed error message for debugging.
+ *                   example: "Database connection failed"
  */
 
 

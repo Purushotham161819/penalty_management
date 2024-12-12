@@ -7,7 +7,11 @@ const violatorSchema = new mongoose.Schema({
         required: true, // Ensure the violator ID is required
         unique: true    // Ensure it is unique
     },
-    name: {
+    firstName: {
+        type: String,
+        required: true // Ensure the name is required
+    },
+    lastName: {
         type: String,
         required: true // Ensure the name is required
     },
