@@ -209,14 +209,10 @@
  *                   type: object
  *                   description: The fine record data
  *                   properties:
- *                     firstName:
+ *                     violatorID:
  *                       type: string
- *                       description: First name of the person
- *                       example: John
- *                     lastName:
- *                       type: string
- *                       description: Last name of the person
- *                       example: Doe
+ *                       description: Unique identifier for the violator
+ *                       example: V12345
  *                     violation:
  *                       type: string
  *                       description: The violation details
@@ -224,7 +220,7 @@
  *                     amount:
  *                       type: number
  *                       description: Fine amount
- *                       example: 150.00
+ *                       example: 150
  *                     dueDate:
  *                       type: string
  *                       format: date
@@ -244,7 +240,7 @@
  *                 message:
  *                   type: string
  *                   description: Reason for failure
- *                   example: Record not found.
+ *                   example: "Record not found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -259,7 +255,11 @@
  *                 message:
  *                   type: string
  *                   description: Reason for failure
- *                   example: Error fetching the record.
+ *                   example: "Error fetching the record"
+ *                 error:
+ *                   type: string
+ *                   description: Error details for debugging (optional)
+ *                   example: "Database connection error"
  */
 
 
