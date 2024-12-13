@@ -289,26 +289,22 @@
  *           schema:
  *             type: object
  *             properties:
- *               firstName:
+ *               violatorID:
  *                 type: string
- *                 description: First name of the person (optional)
- *                 example: John
- *               lastName:
- *                 type: string
- *                 description: Last name of the person (optional)
- *                 example: Doe
+ *                 description: Unique identifier for the violator
+ *                 example: V12345
  *               violation:
  *                 type: string
- *                 description: The violation details (optional)
+ *                 description: The violation details
  *                 example: Speeding
  *               amount:
  *                 type: number
- *                 description: Fine amount (optional)
- *                 example: 150.00
+ *                 description: Fine amount
+ *                 example: 150
  *               dueDate:
  *                 type: string
  *                 format: date
- *                 description: The due date for the fine payment (optional)
+ *                 description: The due date for the fine payment
  *                 example: 2024-12-31
  *     responses:
  *       200:
@@ -325,19 +321,15 @@
  *                 message:
  *                   type: string
  *                   description: Success message
- *                   example: Record updated successfully
+ *                   example: "Record updated successfully"
  *                 data:
  *                   type: object
  *                   description: The updated fine record
  *                   properties:
- *                     firstName:
+ *                     violatorID:
  *                       type: string
- *                       description: First name of the person
- *                       example: John
- *                     lastName:
- *                       type: string
- *                       description: Last name of the person
- *                       example: Doe
+ *                       description: Unique identifier for the violator
+ *                       example: V12345
  *                     violation:
  *                       type: string
  *                       description: The violation details
@@ -345,7 +337,7 @@
  *                     amount:
  *                       type: number
  *                       description: Fine amount
- *                       example: 150.00
+ *                       example: 150
  *                     dueDate:
  *                       type: string
  *                       format: date
@@ -365,7 +357,7 @@
  *                 message:
  *                   type: string
  *                   description: Reason for failure
- *                   example: Record Not Found
+ *                   example: "Record Not Found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -380,12 +372,13 @@
  *                 message:
  *                   type: string
  *                   description: Reason for failure
- *                   example: Failed to update the record
+ *                   example: "Failed to update the record"
  *                 error:
  *                   type: string
  *                   description: Error details for debugging (optional)
  *                   example: "Validation error"
  */
+
 
 // Swagger Documentation: for fine(penalty schema)
 
@@ -787,17 +780,18 @@
  * @swagger
  * /updateViolator/{id}:
  *   put:
- *     summary: Update a violator's record by ID
- *     description: This endpoint allows the update of a violator's details in the database using their unique ID. The details are updated with the provided data in the request body.
+ *     summary: Update a violator's details
+ *     description: This endpoint allows you to update the details of an existing violator using their MongoDB ObjectId.
  *     tags:
  *       - Violators
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: id
+ *         in: path
+ *         description: The unique MongoDB ObjectId of the violator to update
  *         required: true
- *         description: The unique identifier of the violator whose record is to be updated.
  *         schema:
  *           type: string
+ *           format: objectid
  *     requestBody:
  *       required: true
  *       content:
@@ -807,27 +801,64 @@
  *             properties:
  *               violatorID:
  *                 type: string
- *                 description: The unique identifier of the violator.
- *               name:
+ *                 description: Unique identifier for the violator.
+ *                 example: "V123456"
+ *               firstName:
  *                 type: string
- *                 description: The name of the violator.
+ *                 description: First name of the violator.
+ *                 example: "John"
+ *               lastName:
+ *                 type: string
+ *                 description: Last name of the violator.
+ *                 example: "Doe"
  *               DoB:
  *                 type: string
  *                 format: date
- *                 description: The date of birth of the violator.
+ *                 description: Date of birth of the violator.
+ *                 example: "1985-07-15"
  *               email:
  *                 type: string
  *                 format: email
- *                 description: The email address of the violator.
+ *                 description: Email address of the violator.
+ *                 example: "john.doe@example.com"
  *               contactNumber:
  *                 type: string
- *                 description: The contact number of the violator.
+ *                 description: Contact number of the violator.
+ *                 example: "+1234567890"
  *               address:
- *                 type: string
- *                 description: The address of the violator.
+ *                 type: object
+ *                 properties:
+ *                   street:
+ *                     type: string
+ *                     description: Street address of the violator.
+ *                     example: "123 Main St"
+ *                   apartment:
+ *                     type: string
+ *                     description: Apartment number (optional).
+ *                     example: "Apt 4B"
+ *                   city:
+ *                     type: string
+ *                     description: City of the violator.
+ *                     example: "Los Angeles"
+ *                   state:
+ *                     type: string
+ *                     description: State of the violator.
+ *                     example: "CA"
+ *                   zipCode:
+ *                     type: string
+ *                     description: Zip code of the violator.
+ *                     example: "90001"
+ *             required:
+ *               - violatorID
+ *               - firstName
+ *               - lastName
+ *               - DoB
+ *               - email
+ *               - contactNumber
+ *               - address
  *     responses:
  *       200:
- *         description: The violator's record was successfully updated.
+ *         description: Violator updated successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -838,20 +869,23 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Violator record updated successfully"
+ *                   example: "Violator updated successfully."
  *                 data:
  *                   type: object
  *                   properties:
  *                     violatorID:
  *                       type: string
- *                       example: "12345"
- *                     name:
+ *                       example: "V123456"
+ *                     firstName:
  *                       type: string
- *                       example: "John Doe"
+ *                       example: "John"
+ *                     lastName:
+ *                       type: string
+ *                       example: "Doe"
  *                     DoB:
  *                       type: string
  *                       format: date
- *                       example: "1985-06-15"
+ *                       example: "1985-07-15"
  *                     email:
  *                       type: string
  *                       example: "john.doe@example.com"
@@ -859,10 +893,25 @@
  *                       type: string
  *                       example: "+1234567890"
  *                     address:
- *                       type: string
- *                       example: "123 Main Street, City, Country"
+ *                       type: object
+ *                       properties:
+ *                         street:
+ *                           type: string
+ *                           example: "123 Main St"
+ *                         apartment:
+ *                           type: string
+ *                           example: "Apt 4B"
+ *                         city:
+ *                           type: string
+ *                           example: "Los Angeles"
+ *                         state:
+ *                           type: string
+ *                           example: "CA"
+ *                         zipCode:
+ *                           type: string
+ *                           example: "90001"
  *       400:
- *         description: Bad Request - The data provided in the request body is invalid.
+ *         description: Invalid ObjectId format.
  *         content:
  *           application/json:
  *             schema:
@@ -873,9 +922,9 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: "Invalid data provided for violator"
+ *                   example: "Invalid ObjectId format."
  *       404:
- *         description: Violator not found - No violator found with the provided ID.
+ *         description: Violator not found.
  *         content:
  *           application/json:
  *             schema:
@@ -886,9 +935,9 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: "Violator not found"
+ *                   example: "Violator not found."
  *       500:
- *         description: Server error - Internal server error while updating the violator.
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -899,10 +948,10 @@
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: "Error updating violator"
+ *                   example: "An error occurred while updating the violator."
  *                 error:
  *                   type: string
- *                   example: "Database connection failure"
+ *                   example: "Error message"
  */
 
 

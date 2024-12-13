@@ -228,41 +228,44 @@ server.delete(process.env.DELETE_VIOLATOR_ROUTE, async (req, res) => {
 
 
 
-// Update Violator Record By ID
+// Update Violator By ID
 server.put(process.env.UPDATE_VIOLATOR_ROUTE, async (req, res) => {
-    const { violatorID } = req.params;  // Get the violatorID from the URL parameter
-    const updatedData = req.body;  // Get updated violator details from the request body
+    const { id } = req.params; // Extract the violator ID from the route parameter
+    const updatedData = req.body; // Extract the updated violator details from the request body
 
     try {
-        // Update the violator details using findByIdAndUpdate
+        
+        // Find and update the violator record using MongoDB Object ID
         const updatedViolator = await Violator.findByIdAndUpdate(
-            violatorID,
-            updatedData,
-            { new: true, runValidators: true }  // Return updated document and validate the data
+            id, // Use the MongoDB ObjectId to search for the violator
+            updatedData, // Data to update
+            { new: true, runValidators: true } // Ensure we return the updated document and validate data
         );
 
+        // If no violator is found, return a 404 error
         if (!updatedViolator) {
             return res.status(404).json({
                 success: false,
-                message: process.env.VIOLATOR_NOT_FOUND  // If violator is not found, return a 404 error
+                message: process.env.VIOLATOR_NOT_FOUND // Use environment variable or fallback
             });
         }
 
-        // Return updated violator details in response
-        res.json({
+        // Respond with success and the updated violator data
+        res.status(200).json({
             success: true,
-            message: process.env.VIOLATOR_UPDATE_SUCCESS,  // Success message from environment variable
-            data: updatedViolator  // Updated violator data
+            message: process.env.VIOLATOR_UPDATE_SUCCESS, // Success message
+            data: updatedViolator // Return the updated violator record
         });
     } catch (error) {
-        console.error('Error updating violator:', error);  // Log error for debugging
+        console.error('Error updating violator:', error); // Log error for debugging
         res.status(500).json({
             success: false,
-            message: process.env.VIOLATOR_UPDATE_ERROR,  // Error message from environment variable
-            error: error.message  // Include the error message for debugging purposes
+            message: process.env.VIOLATOR_UPDATE_ERROR, // Error message
+            error: error.message // Include error details for debugging
         });
     }
 });
+
 
 
 
