@@ -1159,6 +1159,114 @@
  *                   }
  */
 
+// Swagger Documentation: Delete Bulk Violators Endpoint
+
+/**
+ * @swagger
+ * /deleteBulkViolators:
+ *   post:
+ *     summary: Bulk Delete Violators
+ *     description: |
+ *       This API accepts either an Excel file or a JSON file containing violator IDs. The system will:
+ *       - Delete violators with associated IDs.
+ *       - Return violator IDs that do not exist in the database, along with appropriate reasons.
+ *       - The input file can either be a JSON file or an Excel file.
+ *       - Excel files must contain a sheet with a `violatorID` column.
+ *       - JSON files must contain an array of violator IDs.
+ *       - If any errors occur during the deletion process, they will be logged, and the system will continue to process the remaining records.
+ *       - If the file is invalid (unsupported format or incorrect content), a detailed error message will be returned.
+ *     tags:
+ *       - Operations On Bulk Data
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: |
+ *                   Upload either an Excel or a JSON file with a list of violator IDs.
+ *                   If the file is an Excel file, it should have a sheet with a column named `violatorID`.
+ *                   If it's a JSON file, it should contain an array of violator IDs.
+ *             required:
+ *               - file
+ *     responses:
+ *       200:
+ *         description: Violators successfully deleted.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates if the operation was successful.
+ *                 message:
+ *                   type: string
+ *                   description: Summary message of the operation.
+ *                 violatorNotFound:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     description: List of violator IDs that were not found in the database.
+ *                   example: ['V999', 'V888']
+ *       400:
+ *         description: Invalid file type or file format.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates the operation failed due to client error.
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating why the file was invalid.
+ *             examples:
+ *               no_file:
+ *                 summary: No file uploaded
+ *                 value:
+ *                   success: false
+ *                   message: "No file uploaded. Please upload a JSON or Excel file."
+ *               unsupported_format:
+ *                 summary: Unsupported file format
+ *                 value:
+ *                   success: false
+ *                   message: "Unsupported file format. Only JSON and Excel files are allowed!"
+ *               invalid_content:
+ *                 summary: Invalid content in file
+ *                 value:
+ *                   success: false
+ *                   message: "The uploaded file must contain a list of violator IDs."
+ *       500:
+ *         description: Internal Server Error (processing or database failure).
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates the operation failed due to server error.
+ *                 message:
+ *                   type: string
+ *                   description: General error message.
+ *                 error:
+ *                   type: string
+ *                   description: Detailed error message indicating the cause of the failure.
+ *             examples:
+ *               database_error:
+ *                 summary: Database connection issue
+ *                 value:
+ *                   success: false
+ *                   message: "An error occurred while deleting the violators."
+ *                   error: "Database connection failed."
+ */
+
 // Swagger Documentation: Add Bulk Fines Endpoint
 
 /**
