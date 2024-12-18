@@ -420,6 +420,91 @@ server.post(
   }
 );
 
+// Bulk Delete Violators
+server.post(
+  process.env.DELETE_BULK_VIOLATORS,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      // Validate that a file was uploaded
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: process.env.NO_FILE_UPLOAD,
+        });
+      }
+
+      // Parse the file based on its type
+      let violatorIDs = [];
+      try {
+        if (req.file.mimetype === "application/json") {
+          // Parse JSON file
+          violatorIDs = JSON.parse(req.file.buffer.toString());
+        } else if (
+          req.file.mimetype ===
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ) {
+          // Parse Excel file
+          const workbook = xlsx.read(req.file.buffer);
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const data = xlsx.utils.sheet_to_json(sheet);
+          violatorIDs = data.map((row) => row.violatorID);
+        } else {
+          return res.status(400).json({
+            success: false,
+            message: process.env.UNSUPPORTED_FILE,
+          });
+        }
+      } catch (parseError) {
+        return res.status(400).json({
+          success: false,
+          message: process.env.PARSING_ERROR,
+          error: parseError.message,
+        });
+      }
+
+      // Initialize variables
+      const violatorNotFound = [];
+      const deletedCount = 0;
+
+      // Loop through each violatorID and process the deletion
+      for (let violatorID of violatorIDs) {
+        try {
+          const violator = await Violator.findOne({ violatorID });
+
+          if (!violator) {
+            violatorNotFound.push(violatorID); // Add to not found list
+          } else {
+            await Violator.deleteOne({ violatorID }); // Delete the violator
+            deletedCount++; // Increment count of deleted violators
+          }
+        } catch (dbError) {
+          console.error(
+            `Error deleting violator with ID: ${violatorID}`,
+            dbError
+          );
+          // Handle individual violator deletion failure without crashing the loop
+          continue;
+        }
+      }
+
+      // Respond with a summary of the operation
+      return res.status(200).json({
+        success: true,
+        message: process.env.BULK_DELETE_VIOLATORS_SUCCESS,
+        violatorNotFound,
+      });
+    } catch (error) {
+      console.error("Error in deleteBulkViolators API:", error);
+      return res.status(500).json({
+        success: false,
+        message: process.env.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      });
+    }
+  }
+);
+
 // Bulk Add Fines API - Validates fines and processes only valid ones
 server.post(
   process.env.ADD_BULK_FINES,
