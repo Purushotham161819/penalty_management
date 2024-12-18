@@ -103,10 +103,6 @@
  *                   example: "Error adding fine"
  */
 
-
-
-
-
 // Swagger Documentation: Delete Fine Record Endpoint
 
 /**
@@ -172,8 +168,6 @@
  *                   description: Reason for failure
  *                   example: Error deleting the record.
  */
-
-
 
 // Swagger Documentation: Get Fine Record by ID Endpoint
 
@@ -262,9 +256,7 @@
  *                   example: "Database connection error"
  */
 
-
 // Swagger Documentation: Update Fine Record by ID Endpoint
-
 
 /**
  * @swagger
@@ -379,7 +371,6 @@
  *                   example: "Validation error"
  */
 
-
 // Swagger Documentation: for fine(penalty schema)
 
 /**
@@ -466,7 +457,6 @@
  *     description: The due date for the fine payment.
  *     example: "2024-12-31"
  */
-
 
 // Swagger Documentation: Add Violator Endpoint
 
@@ -614,8 +604,6 @@
  *                   example: "Database connection failed"
  */
 
-
-
 // Swagger Documentation: get Violator By Id Endpoint
 
 /**
@@ -713,7 +701,6 @@
  *                   example: "Database connection failed"
  */
 
-
 // Swagger Documentation: Delete Violator Endpoint
 
 /**
@@ -772,7 +759,6 @@
  *                   type: string
  *                   example: "Error deleting violator"
  */
-
 
 // Swagger Documentation: Update Violator Endpoint
 
@@ -954,6 +940,89 @@
  *                   example: "Error message"
  */
 
+// Swagger Documentation: retrieve all fines for a specific violator
+
+/**
+ * @swagger
+ * /fines/{violatorID}:
+ *   get:
+ *     summary: Retrieve all fines associated with a specific violator
+ *     description: Fetches all fines for a given violator by their unique `violatorID`. If the violator does not exist or has no fines, appropriate messages are returned.
+ *     tags:
+ *       - Violators
+ *     parameters:
+ *       - in: path
+ *         name: violatorID
+ *         required: true
+ *         description: The unique identifier for the violator whose fines need to be retrieved.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved fines for the violator
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates the success of the operation
+ *                 violatorID:
+ *                   type: string
+ *                   description: The unique identifier of the violator
+ *                 fines:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       violator:
+ *                         type: string
+ *                         description: The ObjectId of the violator associated with the fine
+ *                       violation:
+ *                         type: string
+ *                         description: The violation committed by the violator
+ *                       amount:
+ *                         type: number
+ *                         description: The monetary amount of the fine
+ *                       dueDate:
+ *                         type: string
+ *                         format: date
+ *                         description: The due date for the fine
+ *                       fineCreatedDate:
+ *                         type: string
+ *                         format: date
+ *                         description: The date when the fine was created
+ *       404:
+ *         description: Violator not found in the database
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates the failure of the operation
+ *                 message:
+ *                   type: string
+ *                   description: Error message explaining the issue
+ *       500:
+ *         description: Internal server error occurred while retrieving fines
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates the failure of the operation
+ *                 message:
+ *                   type: string
+ *                   description: Error message explaining the issue
+ *                 error:
+ *                   type: string
+ *                   description: Detailed error message for debugging
+ */
 
 // Swagger Documentation: Violator Schema
 
@@ -1011,4 +1080,325 @@
  *             zipCode:
  *               type: string
  *               description: The ZIP code of the violator's address. This field is required.
+ */
+
+// Swagger Documentation: Add Bulk Violators Endpoint
+
+/**
+ * @swagger
+ * /addBulkViolators:
+ *   post:
+ *     tags:
+ *       - Operations On Bulk Data
+ *     summary: Bulk upload violators from a JSON or Excel file
+ *     description: This endpoint allows users to upload a file (either JSON or Excel format) containing an array of violators. The violators will be validated and added to the database.
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: The file containing violator data in either JSON or Excel format.
+ *           required:
+ *             - file
+ *     responses:
+ *       201:
+ *         description: Violators added successfully
+ *         content:
+ *           application/json:
+ *             examples:
+ *               success:
+ *                 value:
+ *                   {
+ *                     "success": true,
+ *                     "message": "Violators added successfully"
+ *                   }
+ *       400:
+ *         description: Bad Request - Invalid input or file format
+ *         content:
+ *           application/json:
+ *             examples:
+ *               invalidFormat:
+ *                 value:
+ *                   {
+ *                     "success": false,
+ *                     "message": "Invalid JSON format in the uploaded file."
+ *                   }
+ *               invalidExcelFormat:
+ *                 value:
+ *                   {
+ *                     "success": false,
+ *                     "message": "Invalid Excel format in the uploaded file."
+ *                   }
+ *               noFileUploaded:
+ *                 value:
+ *                   {
+ *                     "success": false,
+ *                     "message": "No file uploaded. Please upload a JSON or Excel file."
+ *                   }
+ *               invalidData:
+ *                 value:
+ *                   {
+ *                     "success": false,
+ *                     "message": "Invalid input data. Provide an array of violators."
+ *                   }
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             examples:
+ *               serverError:
+ *                 value:
+ *                   {
+ *                     "success": false,
+ *                     "message": "Failed to add violators",
+ *                     "error": "Detailed error message"
+ *                   }
+ */
+
+// Swagger Documentation: Add Bulk Fines Endpoint
+
+/**
+ * @swagger
+ * /addBulkFines:
+ *   post:
+ *     summary: Upload fines data in bulk
+ *     description: Accepts a JSON or Excel file to process fines for violators in bulk.
+ *     tags:
+ *       - Operations On Bulk Data
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: |
+ *                   Upload a file containing fines information. Supported file formats:
+ *                   - JSON: An array of fines objects with fields violatorID, violation, amount, dueDate.
+ *                   - Excel: The first sheet should have columns for violatorID, violation, amount, dueDate.
+ *             required:
+ *               - file
+ *     responses:
+ *       201:
+ *         description: Fines processed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates if the operation was successful.
+ *                 message:
+ *                   type: string
+ *                   description: Summary of the operation.
+ *                 addedCount:
+ *                   type: integer
+ *                   description: Number of fines successfully added.
+ *                 invalidCount:
+ *                   type: integer
+ *                   description: Number of fines that could not be processed due to errors.
+ *                 invalidFines:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       violatorID:
+ *                         type: string
+ *                         description: The ID of the violator.
+ *                       violation:
+ *                         type: string
+ *                         description: Description of the violation.
+ *                       amount:
+ *                         type: number
+ *                         description: Amount of the fine.
+ *                       dueDate:
+ *                         type: string
+ *                         format: date
+ *                         description: Due date of the fine.
+ *                       error:
+ *                         type: string
+ *                         description: Error message explaining why the record is invalid.
+ *       400:
+ *         description: Bad Request - Invalid file or data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates if the operation was successful.
+ *                 message:
+ *                   type: string
+ *                   description: Error message explaining the issue.
+ *                 error:
+ *                   type: string
+ *                   description: Detailed error message.
+ *             examples:
+ *               unsupported_file:
+ *                 summary: Unsupported file type
+ *                 value:
+ *                   success: false
+ *                   message: "Unsupported file type. Only JSON and Excel files are allowed."
+ *               invalid_json:
+ *                 summary: Invalid JSON format
+ *                 value:
+ *                   success: false
+ *                   message: "Invalid JSON format in the uploaded file."
+ *               invalid_data:
+ *                 summary: Invalid data in the file
+ *                 value:
+ *                   success: false
+ *                   message: "Invalid input data. Provide a non-empty array of fines."
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates if the operation was successful.
+ *                 message:
+ *                   type: string
+ *                   description: Error message indicating server-side failure.
+ *                 error:
+ *                   type: string
+ *                   description: Detailed error message.
+ *             examples:
+ *               server_error:
+ *                 summary: Server processing error
+ *                 value:
+ *                   success: false
+ *                   message: "Failed to process fines."
+ *                   error: "Detailed server error message."
+ */
+
+//Swagger documentation for Bulk Delete Fines
+
+/**
+ * @swagger
+ * /deleteBulkFines:
+ *   post:
+ *     summary: Delete fines for violators in bulk using an uploaded Excel or JSON file.
+ *     description: |
+ *       This API accepts either an Excel file or a JSON file containing violator IDs. The system will:
+ *       - Delete fines for violators with associated fines.
+ *       - Return violator IDs that do not exist in the system, along with appropriate reasons.
+ *       - The input can be in the form of a JSON file or an Excel file.
+ *       - Excel files must contain a sheet with a `violatorID` column.
+ *       - JSON files must contain a list of violator IDs.
+ *     tags:
+ *       - Operations On Bulk Data
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: |
+ *                   Upload either an Excel or a JSON file with a list of violator IDs.
+ *                   If the file is an Excel file, it should have a sheet with a column named `violatorID`.
+ *                   If it's a JSON file, it should contain an array of violator IDs.
+ *             required:
+ *               - file
+ *     responses:
+ *       200:
+ *         description: Fines successfully processed for violators.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates if the operation was successful.
+ *                 message:
+ *                   type: string
+ *                   description: Summary message of the operation.
+ *                 processedIDs:
+ *                   type: integer
+ *                   description: Number of violator IDs processed from the uploaded file.
+ *                 deletedCount:
+ *                   type: integer
+ *                   description: Number of fines successfully deleted.
+ *                 notFoundViolatorIDs:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       violatorID:
+ *                         type: string
+ *                         description: ID of a violator not found in the system.
+ *                       message:
+ *                         type: string
+ *                         description: Reason why the violator was not found.
+ *       400:
+ *         description: Bad Request - Invalid file or data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates the operation failed due to client error.
+ *                 message:
+ *                   type: string
+ *                   description: Brief message explaining the error.
+ *                 error:
+ *                   type: string
+ *                   description: Detailed error information.
+ *             examples:
+ *               no_file:
+ *                 summary: No file uploaded
+ *                 value:
+ *                   success: false
+ *                   message: "No file uploaded. Please upload an Excel or JSON file."
+ *               unsupported_format:
+ *                 summary: Unsupported file format
+ *                 value:
+ *                   success: false
+ *                   message: "Unsupported file format. Please upload a valid Excel or JSON file."
+ *               invalid_content:
+ *                 summary: Invalid data in the file
+ *                 value:
+ *                   success: false
+ *                   message: "The input must contain a non-empty list of violator IDs."
+ *       500:
+ *         description: Internal Server Error - Processing failure.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates the operation failed due to server error.
+ *                 message:
+ *                   type: string
+ *                   description: General error message indicating server failure.
+ *                 error:
+ *                   type: string
+ *                   description: Detailed server-side error information.
+ *             examples:
+ *               server_issue:
+ *                 summary: Server processing error
+ *                 value:
+ *                   success: false
+ *                   message: "An error occurred while deleting fines."
+ *                   error: "Detailed server error message."
  */
