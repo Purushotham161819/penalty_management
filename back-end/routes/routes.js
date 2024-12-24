@@ -12,7 +12,7 @@ const {
 const Violator = require("../models/violator");
 const { multer, fs, xlsx, upload } = require("../dependencies");
 
-// Route to add fine data to the server
+// API to Add Fine Data to the Server
 server.post(process.env.ADD_FINE_ROUTE, async (req, res) => {
   const { violatorID, violation, amount, dueDate } = req.body;
 
@@ -70,7 +70,7 @@ server.post(process.env.ADD_FINE_ROUTE, async (req, res) => {
   }
 });
 
-// Route: Delete Fine Record
+// API to Delete Fine Record by ID
 server.delete(process.env.DELETE_FINE_ROUTE, async (req, res) => {
   const recordID = req.params.id; // Extract record ID from the route parameter
   try {
@@ -86,7 +86,7 @@ server.delete(process.env.DELETE_FINE_ROUTE, async (req, res) => {
   }
 });
 
-// Get Fine Record By ID
+// API to Retrieve Fine Record by ID
 server.get(process.env.GET_RECORD_ROUTE, async (req, res) => {
   const { id } = req.params;
 
@@ -109,7 +109,7 @@ server.get(process.env.GET_RECORD_ROUTE, async (req, res) => {
   }
 });
 
-// Update Fine Record By ID
+// API to Update Fine Record by ID
 server.put(process.env.UPDATE_RECORD_ROUTE, async (req, res) => {
   const { id } = req.params;
   const updatedData = req.body;
@@ -143,7 +143,7 @@ server.put(process.env.UPDATE_RECORD_ROUTE, async (req, res) => {
   }
 });
 
-// API to add violator details
+// API to Add New Violator Details
 server.post(process.env.ADD_VIOLATOR_ROUTE, async (req, res) => {
   const {
     violatorID,
@@ -221,7 +221,7 @@ server.post(process.env.ADD_VIOLATOR_ROUTE, async (req, res) => {
   }
 });
 
-// Get Violator By ID
+// API to Retrieve Violator Details by ID
 server.get(process.env.GET_VIOLATOR_ROUTE, async (req, res) => {
   const { id } = req.params; // Extract the violator ID from the route parameter
 
@@ -248,7 +248,7 @@ server.get(process.env.GET_VIOLATOR_ROUTE, async (req, res) => {
   }
 });
 
-// Route: Delete Violator
+// API to Delete Violator by ID
 server.delete(process.env.DELETE_VIOLATOR_ROUTE, async (req, res) => {
   const violatorID = req.params.id; // Extract violator ID from the route parameter
   try {
@@ -264,7 +264,7 @@ server.delete(process.env.DELETE_VIOLATOR_ROUTE, async (req, res) => {
   }
 });
 
-// Update Violator By ID
+// API to Update Violator Information by ID
 server.put(process.env.UPDATE_VIOLATOR_ROUTE, async (req, res) => {
   const { id } = req.params; // Extract the violator ID from the route parameter
   const updatedData = req.body; // Extract the updated violator details from the request body
@@ -301,7 +301,7 @@ server.put(process.env.UPDATE_VIOLATOR_ROUTE, async (req, res) => {
   }
 });
 
-// Endpoint to retrieve all fines for a specific violator
+// API to Retrieve All Fines for a Specific Violator
 server.get(process.env.RETRIEVE_ALL_FINES, async (req, res) => {
   try {
     const { violatorID } = req.params;
@@ -346,7 +346,7 @@ server.get(process.env.RETRIEVE_ALL_FINES, async (req, res) => {
   }
 });
 
-// Bulk Add Violators API
+// API for Bulk Addition of Violators
 server.post(
   process.env.ADD_BULK_VIOLATORS,
   upload.single("file"),
@@ -420,7 +420,7 @@ server.post(
   }
 );
 
-// Bulk Delete Violators
+// API for Bulk Deletion of Violators
 server.post(
   process.env.DELETE_BULK_VIOLATORS,
   upload.single("file"),
@@ -505,7 +505,7 @@ server.post(
   }
 );
 
-// Bulk Add Fines API - Validates fines and processes only valid ones
+// API for Bulk Addition of Fines with Validation
 server.post(
   process.env.ADD_BULK_FINES,
   upload.single("file"),
@@ -623,7 +623,7 @@ server.post(
   }
 );
 
-//Bulk Delete Fines API
+// API for Bulk Deletion of Fines
 server.post(
   process.env.DELETE_BULK_FINES_ROUTE,
   upload.single("file"),
@@ -741,10 +741,181 @@ server.post(
   }
 );
 
-//Bulk update Fines API - Currently working
-server.put("/updateFines", async (req, res) => {
+// API for Bulk Update of Violator Information
+server.put(
+  process.env.BULK_UPDATE_VIOLATOR_ROUTE,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: process.env.NO_FILE_UPLOAD,
+        });
+      }
+
+      let parsedData;
+      if (req.file.mimetype === "application/json") {
+        parsedData = JSON.parse(req.file.buffer.toString());
+      } else if (
+        req.file.mimetype ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ) {
+        const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
+        const sheetName = workbook.SheetNames[0];
+        parsedData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+        parsedData = parsedData.map((record) => {
+          if (
+            record["address.street"] ||
+            record["address.apartment"] ||
+            record["address.city"] ||
+            record["address.state"] ||
+            record["address.zipCode"]
+          ) {
+            record.address = {
+              street: record["address.street"] || undefined,
+              apartment: record["address.apartment"] || undefined,
+              city: record["address.city"] || undefined,
+              state: record["address.state"] || undefined,
+              zipCode: record["address.zipCode"] || undefined,
+            };
+          }
+          return record;
+        });
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: process.env.UNSUPPORTED_FILE,
+        });
+      }
+
+      const violatorDoesNotExist = [];
+      const updateSuccess = [];
+      const updateFailures = [];
+
+      for (const record of parsedData) {
+        const {
+          violatorID,
+          firstName,
+          lastName,
+          DoB,
+          email,
+          contactNumber,
+          address,
+        } = record;
+
+        if (!violatorID) {
+          updateFailures.push({
+            violatorID: "N/A",
+            error: "Missing violatorID in record.",
+          });
+          continue;
+        }
+
+        const existingViolator = await Violator.findOne({ violatorID });
+        if (!existingViolator) {
+          violatorDoesNotExist.push(violatorID);
+          continue;
+        }
+
+        if (address && typeof address !== "object") {
+          updateFailures.push({
+            violatorID,
+            error: "Invalid or missing address field.",
+          });
+          continue;
+        }
+
+        const updateData = {
+          ...(firstName && { firstName }),
+          ...(lastName && { lastName }),
+          ...(DoB && { DoB: new Date(DoB) }),
+          ...(email && { email }),
+          ...(contactNumber && { contactNumber }),
+          ...(address && {
+            ...(address.street && { "address.street": address.street }),
+            ...(address.apartment && {
+              "address.apartment": address.apartment,
+            }),
+            ...(address.city && { "address.city": address.city }),
+            ...(address.state && { "address.state": address.state }),
+            ...(address.zipCode && { "address.zipCode": address.zipCode }),
+          }),
+        };
+        try {
+          await Violator.updateOne(
+            { violatorID },
+            { $set: updateData },
+            { runValidators: true }
+          );
+          updateSuccess.push(violatorID);
+        } catch (error) {
+          updateFailures.push({ violatorID, error: error.message });
+        }
+      }
+      res.status(200).json({
+        success: true,
+        message: process.env.BULK_UPDATE_VIOLATOR_SUCCESS_MESSAGE,
+        violatorDoesNotExist,
+        updateSuccess,
+        updateFailures,
+      });
+    } catch (error) {
+      console.error("Error processing violator updates:", error);
+      res.status(500).json({
+        success: false,
+        message: process.env.PROCESSING_ERROR_MESSAGE,
+        error: error.message,
+      });
+    }
+  }
+);
+
+// API for Bulk Updating Fines - Currently Operational
+server.put("/updateBulkFines", upload.single("file"), async (req, res) => {
   try {
-    const fines = req.body; // Array of fines in the specified format
+    let fines;
+
+    // Check if a file is uploaded
+    if (req.file) {
+      const { mimetype, buffer } = req.file;
+
+      // Determine file type and parse accordingly
+      if (mimetype === "application/json") {
+        try {
+          fines = JSON.parse(buffer.toString());
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid JSON file format.",
+          });
+        }
+      } else if (
+        mimetype ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ) {
+        try {
+          const workbook = xlsx.read(buffer, { type: "buffer" });
+          const sheetName = workbook.SheetNames[0];
+          fines = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Error parsing Excel file.",
+          });
+        }
+      } else {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid file format. Only .json and .xlsx files are supported.",
+        });
+      }
+    } else {
+      // Default to JSON body if no file is provided
+      fines = req.body;
+    }
 
     // Validate input
     if (!Array.isArray(fines) || fines.length === 0) {
