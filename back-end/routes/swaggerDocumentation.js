@@ -1510,3 +1510,270 @@
  *                   message: "An error occurred while deleting fines."
  *                   error: "Detailed server error message."
  */
+
+//Swagger documentation for Bulk update violators
+
+/**
+ * @swagger
+ * /updateBulkViolators:
+ *   put:
+ *     summary: Update multiple violator details, including personal and address information, from an uploaded JSON or Excel file.
+ *     description: |
+ *       This endpoint allows the user to upload a JSON or Excel file to update violator details. The file must adhere to the structure defined in the violator schema, which includes the following fields:
+ *       - **violatorID**: Unique identifier for the violator (mandatory).
+ *       - **firstName**: First name of the violator.
+ *       - **lastName**: Last name of the violator.
+ *       - **DoB**: Date of birth in YYYY-MM-DD format.
+ *       - **email**: Email address of the violator.
+ *       - **contactNumber**: Contact number of the violator.
+ *       - **address**: Object containing the violator's address details, including the following subfields:
+ *         - **street**: Street address.
+ *         - **apartment**: Apartment number (optional).
+ *         - **city**: City or town.
+ *         - **state**: State.
+ *         - **zipCode**: ZIP code.
+ *       If any of the provided fields are present in the uploaded file, they will be updated for the corresponding violator.
+ *
+ *     tags:
+ *       - Operations On Bulk Data
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: The file to upload (JSON or Excel) containing violator information, including personal details and address fields.
+ *           encoding:
+ *             file:
+ *               contentType: 
+ *                 - application/json
+ *                 - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+ *     responses:
+ *       200:
+ *         description: Successfully processed the file and updated violator details, including personal and address information.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates the success of the operation.
+ *                 violatorDoesNotExist:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: Array of violator IDs not found in the database.
+ *                 updateSuccess:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: Array of violator IDs successfully updated.
+ *                 updateFailures:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       violatorID:
+ *                         type: string
+ *                         description: The violator ID that failed to update.
+ *                       error:
+ *                         type: string
+ *                         description: Error message describing the failure.
+ *       400:
+ *         description: Bad request, invalid file type, missing data, or improperly structured file.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates the failure of the operation.
+ *                 message:
+ *                   type: string
+ *                   description: Explanation of the failure, e.g., unsupported file type or missing required fields.
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indicates the failure of the operation.
+ *                 message:
+ *                   type: string
+ *                   description: Error message describing the server failure.
+ * 
+ * definitions:
+ *   Violator:
+ *     type: object
+ *     required:
+ *       - violatorID
+ *       - firstName
+ *       - lastName
+ *       - DoB
+ *       - email
+ *       - contactNumber
+ *     properties:
+ *       violatorID:
+ *         type: string
+ *         description: Unique identifier for the violator.
+ *       firstName:
+ *         type: string
+ *         description: First name of the violator.
+ *       lastName:
+ *         type: string
+ *         description: Last name of the violator.
+ *       DoB:
+ *         type: string
+ *         format: date
+ *         description: Date of birth of the violator.
+ *       email:
+ *         type: string
+ *         description: Email address of the violator.
+ *       contactNumber:
+ *         type: string
+ *         description: Contact number of the violator.
+ *       address:
+ *         type: object
+ *         description: Address object containing the violator's address information. If any address fields are provided, they will be updated.
+ *         properties:
+ *           street:
+ *             type: string
+ *             description: Street address of the violator.
+ *           apartment:
+ *             type: string
+ *             description: Apartment number (optional).
+ *           city:
+ *             type: string
+ *             description: City or town of the violator.
+ *           state:
+ *             type: string
+ *             description: State of the violator.
+ *           zipCode:
+ *             type: string
+ *             description: ZIP code of the violator.
+ */
+
+
+// Swagger to Bulk Update Fines
+
+/**
+ * @swagger
+ * /updateBulkFines:
+ *   put:
+ *     summary: Bulk update fine details for multiple violators
+ *     description: Allows bulk updating of fine details for multiple violators by uploading a JSON or Excel file. Alternatively, JSON data can be sent in the request body.
+ *     tags:
+ *       - Operations On Bulk Data
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: A file containing fine details. Supported formats are `.json` and `.xlsx`.
+ *           encoding:
+ *             file:
+ *               contentType: 
+ *                 - application/json
+ *                 - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               type: object
+ *               properties:
+ *                 violatorID:
+ *                   type: string
+ *                   description: The unique identifier of the violator.
+ *                   example: "12345"
+ *                 violation:
+ *                   type: string
+ *                   description: The description of the violation.
+ *                   example: "Speeding"
+ *                 amount:
+ *                   type: number
+ *                   description: The fine amount.
+ *                   example: 200
+ *                 dueDate:
+ *                   type: string
+ *                   format: date
+ *                   description: The due date for the fine.
+ *                   example: "2024-12-31"
+ *     responses:
+ *       200:
+ *         description: Bulk update successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Bulk update completed"
+ *                 modifiedCount:
+ *                   type: integer
+ *                   description: The number of records successfully updated.
+ *                   example: 5
+ *                 invalidCount:
+ *                   type: integer
+ *                   description: The number of invalid records.
+ *                   example: 2
+ *                 invalidFines:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       violatorID:
+ *                         type: string
+ *                       violation:
+ *                         type: string
+ *                       amount:
+ *                         type: number
+ *                       dueDate:
+ *                         type: string
+ *                       error:
+ *                         type: string
+ *       400:
+ *         description: Bad request due to invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid file format. Only .json and .xlsx files are supported."
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to update fines"
+ *                 error:
+ *                   type: string
+ */
