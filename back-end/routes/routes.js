@@ -7,6 +7,8 @@ const {
   VALIDATION_PATTERNS,
   VALIDATION_ERROR_MESSAGES,
 } = require("../dependencies");
+const uploadDocuments = require("../config/uploadDocuments");
+const SupportingDocument = require("../models/supportingDocumentSchema");
 
 // Import the Violator model
 const Violator = require("../models/violator");
@@ -997,6 +999,127 @@ server.put("/updateBulkFines", upload.single("file"), async (req, res) => {
     });
   }
 });
+
+// API endpoint to upload a supporting document
+server.post(
+  "/fines/:fineId/documents",
+  uploadDocuments.single("document"),
+  async (req, res) => {
+    try {
+      const { fineId } = req.params;
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded." });
+      }
+
+      // Save file metadata to the database
+      const document = new SupportingDocument({
+        fineId,
+        fileName: file.originalname,
+        fileType: file.mimetype,
+        fileSize: file.size,
+        filePath: file.path,
+      });
+
+      await document.save();
+
+      res.status(201).json({
+        message: "Document uploaded successfully.",
+        document,
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+);
+
+// API endpoint to delete a supporting document
+server.delete("/fines/:fineId/documents/:documentId", async (req, res) => {
+  try {
+    const { fineId, documentId } = req.params;
+
+    // Find the document in the database
+    const document = await SupportingDocument.findOne({ _id: documentId, fineId });
+
+    if (!document) {
+      return res.status(404).json({ message: "Document not found." });
+    }
+
+    // Delete the file from the file system
+    const fs = require("fs");
+    fs.unlink(document.filePath, async (err) => {
+      if (err) {
+        console.error("Error deleting the file:", err.message);
+        return res.status(500).json({ message: "Failed to delete the file from storage." });
+      }
+
+      // Remove the document metadata from the database
+      await SupportingDocument.deleteOne({ _id: documentId });
+
+      res.status(200).json({ message: "Document deleted successfully." });
+    });
+  } catch (error) {
+    console.error("Error in deleting document:", error.message);
+    res.status(500).json({ message: "An unexpected error occurred." });
+  }
+});
+
+
+// API endpoint to update a supporting document
+server.put(
+  "/fines/:fineId/documents/:documentId",
+  uploadDocuments.single("document"),
+  async (req, res) => {
+    try {
+      const { fineId, documentId } = req.params;
+      const file = req.file;
+
+      // Find the existing document
+      const existingDocument = await SupportingDocument.findOne({
+        _id: documentId,
+        fineId: fineId,
+      });
+
+      if (!existingDocument) {
+        return res.status(404).json({
+          message: "Document not found for the provided fineId and documentId.",
+        });
+      }
+
+      // If a new file is uploaded, replace the old file
+      if (file) {
+        // Delete the existing file from the directory
+        if (fs.existsSync(existingDocument.filePath)) {
+          fs.unlinkSync(existingDocument.filePath);
+        }
+
+        // Update the file details in the database
+        existingDocument.fileName = file.originalname;
+        existingDocument.fileType = file.mimetype;
+        existingDocument.fileSize = file.size;
+        existingDocument.filePath = file.path;
+      }
+
+      // Update additional metadata (if needed) from request body
+      if (req.body.fileName) {
+        existingDocument.fileName = req.body.fileName;
+      }
+
+      // Save the updated document
+      await existingDocument.save();
+
+      res.status(200).json({
+        message: "Document updated successfully.",
+        document: existingDocument,
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+);
+
+
 
 // Export the router
 module.exports = router;
