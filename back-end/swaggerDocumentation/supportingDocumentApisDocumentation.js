@@ -99,7 +99,7 @@
 
 /**
  * @swagger
- * /{fineId}/{documentId}:
+ * /fines/{fineId}/documents/{documentId}:
  *   delete:
  *     summary: Delete a supporting document associated with a specific fine.
  *     description: Removes the document file from the storage directory and deletes the metadata from the database.
@@ -122,7 +122,7 @@
  *           example: "64b3f8e8e8b23c3abc123457"
  *     responses:
  *       200:
- *         description: Document deleted successfully. The document and its metadata have been removed.
+ *         description: Document deleted successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -132,7 +132,7 @@
  *                   type: string
  *                   example: "Document deleted successfully."
  *       404:
- *         description: Document not found. The specified document could not be located for the given fine ID.
+ *         description: Document not found.
  *         content:
  *           application/json:
  *             schema:
@@ -142,7 +142,7 @@
  *                   type: string
  *                   example: "Document not found."
  *       500:
- *         description: Internal Server Error. An error occurred while attempting to delete the document or its metadata.
+ *         description: Internal Server Error. An unexpected error occurred.
  *         content:
  *           application/json:
  *             schema:
@@ -152,7 +152,6 @@
  *                   type: string
  *                   example: "An unexpected error occurred."
  */
-
 
 
 //Swagger documentation to update existing supporting document to a fine

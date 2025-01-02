@@ -50,32 +50,27 @@ server.post(
 server.delete(process.env.DELETE_SUPPORTING_DOCUMENT_ROUTE, async (req, res) => {
   try {
     const { fineId, documentId } = req.params;
-    console.log("fineId:", fineId);
-    console.log("documentId:", documentId);
 
     // Find the document in the database
-    const document = await SupportingDocument.findOne({
-      _id: documentId,
-      fineId,
-    });
+    const document = await SupportingDocument.findOne({ _id: documentId, fineId });
 
     if (!document) {
-      return res
-        .status(404)
-        .json({ message: process.env.DOCUMENT_NOT_FOUND_MESSAGE });
+      return res.status(404).json({ message: process.env.DOCUMENT_NOT_FOUND_MESSAGE });
     }
 
-    // Log the file path before attempting deletion
-    console.log("File path to delete:", document.filePath);
-
     // Delete the file from the file system
-    const fs = require("fs").promises;
-    await fs.unlink(document.filePath); // Use promises for async handling
+    const fs = require("fs");
+    fs.unlink(document.filePath, async (err) => {
+      if (err) {
+        console.error("Error deleting the file:", err.message);
+        return res.status(500).json({ message: process.env.FILE_DELETE_FAILURE_MESSAGE });
+      }
 
-    // Remove the document metadata from the database
-    await SupportingDocument.deleteOne({ _id: documentId });
+      // Remove the document metadata from the database
+      await SupportingDocument.deleteOne({ _id: documentId });
 
-    res.status(200).json({ message: process.env.DOCUMENT_DELETE_SUCCESS_MESSAGE });
+      res.status(200).json({ message: process.env.DOCUMENT_DELETE_SUCCESS_MESSAGE });
+    });
   } catch (error) {
     console.error("Error in deleting document:", error.message);
     res.status(500).json({ message: process.env.UNEXPECTED_ERROR_MESSAGE });
