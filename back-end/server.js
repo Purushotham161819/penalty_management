@@ -1,11 +1,13 @@
 const { server, port, host } = require("./dependencies");
-const routes = require("./routes/routes"); // Import the routes
 const { swaggerUi, swaggerSpec } = require("./swaggerConfig");
 
 server.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Use the routes for the /api path
-server.use("/api", routes);
+require("./apis/fineApi");
+require("./apis/violatorApi");
+require("./apis/bulkViolatorOperationsApi");
+require("./apis/bulkFineOperationsApi");
+require("./apis/supportingDocumentApi");
 
 // Start the server
 server.listen(port, () => {

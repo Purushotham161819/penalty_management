@@ -3,7 +3,7 @@ const path = require("path");
 
 // Ensure the directory exists at startup
 const fs = require("fs");
-const documentsDir = path.join(__dirname, "supporting_documents");
+const documentsDir = path.join(__dirname, "../supporting_documents");
 if (!fs.existsSync(documentsDir)) {
   fs.mkdirSync(documentsDir);  // Create the directory if it doesn't exist
 }
